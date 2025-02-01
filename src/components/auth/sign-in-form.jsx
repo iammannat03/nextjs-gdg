@@ -1,15 +1,17 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import {  } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { signIn } from "next-auth/react";
+
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
     email: z.string().email({
@@ -18,20 +20,47 @@ const formSchema = z.object({
     password: z.string().min(1, {
         message: "Password is required.",
     }),
-})
+});
 
 export function SignInForm() {
+    const router = useRouter();
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
             password: "",
         },
-    })
+    });
 
-    function onSubmit(values) {
-        console.log(values)
+    async function onSubmit(values) {
+        try {
+            setError("");
+            setLoading(true);
+
+            const result = await signIn("credentials", {
+                email: values.email,
+                password: values.password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                throw new Error(result.error);
+            }
+
+            router.push("/");
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     }
+
+    const handleGoogleSignIn = () => {
+        signIn("google", { callbackUrl: "/" });
+    };
 
     return (
         <div className="w-full max-w-md space-y-8">
@@ -39,6 +68,12 @@ export function SignInForm() {
                 <h2 className="text-sm font-medium tracking-wide uppercase">Nextjs Workshop</h2>
                 <h1 className="text-2xl font-semibold tracking-tight">Sign In to Nextjs Workshop</h1>
             </div>
+
+            {error && (
+                <div className="p-3 text-sm text-red-500 bg-red-100 rounded-md">
+                    {error}
+                </div>
+            )}
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -62,19 +97,30 @@ export function SignInForm() {
                             <FormItem>
                                 <div className="flex items-center justify-between">
                                     <FormLabel>PASSWORD</FormLabel>
-                                    <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground">
+                                    <Link 
+                                        href="/forgot-password" 
+                                        className="text-sm text-muted-foreground hover:text-foreground"
+                                    >
                                         Forgot your password?
                                     </Link>
                                 </div>
                                 <FormControl>
-                                    <Input type="password" placeholder="Enter your password" {...field} />
+                                    <Input 
+                                        type="password" 
+                                        placeholder="Enter your password" 
+                                        {...field} 
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full bg-white text-black hover:bg-white/90">
-                        Sign In
+                    <Button 
+                        type="submit" 
+                        className="w-full bg-white text-black hover:bg-white/90"
+                        disabled={loading}
+                    >
+                        {loading ? "Signing in..." : "Sign In"}
                     </Button>
                 </form>
             </Form>
@@ -88,7 +134,12 @@ export function SignInForm() {
                 </div>
             </div>
 
-            <Button variant="primary" className="w-full bg-white text-black" onClick={() => console.log("Google sign in")}>
+            <Button 
+                variant="primary" 
+                className="w-full bg-white text-black" 
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+            >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -109,6 +160,16 @@ export function SignInForm() {
                 </svg>
                 Sign in with Google
             </Button>
+
+            <div className="text-center text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Link 
+                    href="/sign-up" 
+                    className="font-semibold hover:text-foreground"
+                >
+                    Sign up
+                </Link>
+            </div>
         </div>
-    )
+    );
 }

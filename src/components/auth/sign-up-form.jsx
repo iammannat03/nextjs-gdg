@@ -1,18 +1,24 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { signIn } from "next-auth/react";
+
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
 
 const formSchema = z
     .object({
         name: z.string().min(2, {
             message: "Name must be at least 2 characters.",
+        }),
+        email: z.string().email({
+            message: "Please enter a valid email address.",
         }),
         password: z.string().min(6, {
             message: "Password must be at least 6 characters.",
@@ -22,21 +28,67 @@ const formSchema = z
     .refine((data) => data.password === data.confirmPassword, {
         message: "Passwords don't match",
         path: ["confirmPassword"],
-});
+    });
 
 export function SignUpForm() {
+    const router = useRouter();
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
+            email: "",
             password: "",
             confirmPassword: "",
         },
     });
 
-    function onSubmit(values) {
-        console.log(values);
+    async function onSubmit(values) {
+        try {
+            setError("");
+            setLoading(true);
+
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: values.name,
+                    email: values.email,
+                    password: values.password,
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || "Registration failed");
+            }
+
+            // Sign in the user after successful registration
+            const result = await signIn("credentials", {
+                email: values.email,
+                password: values.password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                throw new Error(result.error);
+            }
+
+            router.push("/");
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     }
+
+    const handleGoogleSignIn = () => {
+        signIn("google", { callbackUrl: "/" });
+    };
 
     return (
         <div className="w-full max-w-md space-y-8">
@@ -44,6 +96,13 @@ export function SignUpForm() {
                 <h2 className="text-sm font-medium tracking-wide uppercase">Nextjs Workshop</h2>
                 <h1 className="text-2xl font-semibold tracking-tight">Sign Up to Nextjs Workshop</h1>
             </div>
+
+            {error && (
+                <div className="p-3 text-sm text-red-500 bg-red-100 rounded-md">
+                    {error}
+                </div>
+            )}
+
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
@@ -54,6 +113,19 @@ export function SignUpForm() {
                                 <FormLabel>YOUR NAME</FormLabel>
                                 <FormControl>
                                     <Input placeholder="Enter your name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>YOUR EMAIL</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Enter your email" type="email" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -79,17 +151,22 @@ export function SignUpForm() {
                             <FormItem>
                                 <FormLabel>CONFIRM PASSWORD</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="Enter your password" {...field} />
+                                    <Input type="password" placeholder="Confirm your password" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full bg-white text-black hover:bg-white/90">
-                        Sign Up
+                    <Button 
+                        type="submit" 
+                        className="w-full bg-white text-black hover:bg-white/90"
+                        disabled={loading}
+                    >
+                        {loading ? "Creating account..." : "Sign Up"}
                     </Button>
                 </form>
             </Form>
+
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                     <Separator />
@@ -98,7 +175,13 @@ export function SignUpForm() {
                     <span className="bg-background px-2 text-muted-foreground">Or</span>
                 </div>
             </div>
-            <Button variant="primary" className="w-full bg-white text-black" onClick={() => console.log("Google sign in")}>
+
+            <Button 
+                variant="primary" 
+                className="w-full bg-white text-black" 
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+            >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
