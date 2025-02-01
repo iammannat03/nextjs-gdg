@@ -6,11 +6,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  event_id: z.string().optional(),
   title: z.string(),
   venue: z.string(),
-  start_date: z.date().min(new Date()),
-  end_date: z.date().min(new Date()),
+  start_date: z.date().min(new Date(), "Start date must be in the future"),
+  end_date: z.date(),
+  start_time: z.string(),
+  end_time: z.string(),
   desc: z.string(),
   image: z.any(),
 });
@@ -28,26 +29,69 @@ const EventForm = (props) => {
   });
   const [image, setImage] = useState(props.event?.image);
 
-  const onSubmit = (values) => {
-    // TODO: Upload image to cloudinary and insert values in db
-    console.log(values);
-  };
-
   useEffect(() => {
     form.setValue(fields.image.name, image);
   }, [image]);
+
+  const onSubmit = async (values) => {
+    // const uploadedImageUrl = await uploadImageToCloudinary(values.image[0]);
+
+    const eventData = {
+      ...values,
+      // image: uploadedImageUrl,
+    };
+
+    try {
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Event creation failed");
+      }
+
+      const data = await response.json();
+      console.log("Event created successfully:", data);
+    } catch (error) {
+      console.error("Error creating event:", error);
+    }
+  };
+
+  // Function to handle image upload to Cloudinary
+  // const uploadImageToCloudinary = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   formData.append("upload_preset", "YOUR_CLOUDINARY_UPLOAD_PRESET"); // Replace with your Cloudinary preset
+  //   const cloudinaryUrl =
+  //     "https://api.cloudinary.com/v1_1/YOUR_CLOUDINARY_CLOUD_NAME/image/upload"; // Replace with your Cloudinary URL
+
+  //   const response = await fetch(cloudinaryUrl, {
+  //     method: "POST",
+  //     body: formData,
+  //   });
+
+  //   const data = await response.json();
+  //   return data.secure_url; // Returns the image URL from Cloudinary
+  // };
 
   return (
     <Form {...form}>
       <form
         autoComplete="off"
-        action=""
         onSubmit={form.handleSubmit(onSubmit)}
-        method="post"
-      >
+        method="post">
+        {/* Title field */}
         <Field form={form} {...fields.title} />
+
+        {/* Venue field */}
         <Field form={form} {...fields.venue} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        {/* Date fields */}
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
           <DatePicker form={form} {...fields.startDate} />
           <DatePicker
             form={form}
@@ -55,15 +99,19 @@ const EventForm = (props) => {
             {...fields.endDate}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        {/* Time fields */}
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
           <Field form={form} {...fields.startTime} />
           <Field form={form} {...fields.endTime} />
         </div>
 
-        <h2 className="my-8 text-3xl text-white text-center">
+        {/* Event Description */}
+        <h2 className="my-8 text-3xl text-center text-white">
           Event Description
         </h2>
 
+        {/* Image field */}
         <Field form={form} {...fields.image}>
           <Input
             onChange={(event) => {
@@ -78,6 +126,7 @@ const EventForm = (props) => {
           />
         </Field>
 
+        {/* Image preview */}
         {image ? (
           <img
             src={image}
@@ -87,21 +136,16 @@ const EventForm = (props) => {
             height={500}
           />
         ) : (
-          <div className="w-full h-[250px] bg-teal-900 rounded-lg"></div>
+          <div className="w-full h-[250px] bg-teal-800 rounded-lg"></div>
         )}
 
-        <Field
-          type={props.event}
-          form={form}
-          {...fields.desc}
-          textarea
-        />
-        <input
-          type="hidden"
-          name="event_id"
-          value={props.event?.id ?? ""}
-        />
+        {/* Description field */}
+        <Field type={props.event} form={form} {...fields.desc} textarea />
 
+        {/* Hidden input for event ID (if updating an existing event) */}
+        <input type="hidden" name="event_id" value={props.event?.id ?? ""} />
+
+        {/* Submit button */}
         <Button className="w-full" type="submit">
           {props.event ? "Update" : "Create"} Event
         </Button>

@@ -20,12 +20,12 @@ const EventsBanner = () => {
           <h1 className="text-4xl font-bold">
             Discover and experience extraordinary Events
           </h1>
-          <p className="text-lg mt-2">
-            Enter in the world of events. Discover now the
-            latest Events or start creating your own!
+          <p className="mt-2 text-lg">
+            Enter in the world of events. Discover now the latest Events or
+            start creating your own!
           </p>
           <div className="mt-12">
-            <button className="bg-white rounded-xl text-black px-4 py-2 mr-8">
+            <button className="px-4 py-2 mr-8 text-black bg-white rounded-xl">
               Discover Now
             </button>
             <button>Watch Video</button>
