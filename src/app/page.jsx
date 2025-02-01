@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {} from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import EventBanner from "@/components/EventsBanner";
 import React from "react";
 
 const page = (props) => {
@@ -34,7 +36,7 @@ const page = (props) => {
           </Button>
         </div>
       </nav>
-      <span className="text-4xl font-bold">Page</span>
+      <span className="text-4xl font-bold ">Page</span>
     </div>
   );
 };
