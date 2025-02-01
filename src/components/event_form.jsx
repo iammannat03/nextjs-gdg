@@ -24,7 +24,17 @@ import DatePicker from "./datepicker_field";
 const EventForm = (props) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: props.event ?? null,
+    defaultValues: props.event ?? {
+      event_id: "",
+      title: "",
+      venue: "",
+      start_date: new Date(),
+      end_date: new Date(),
+      startTime: "",
+      endTime: "",
+      desc: "",
+      image: "",
+    },
   });
   const [image, setImage] = useState(props.event?.image);
 
