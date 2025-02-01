@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {} from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { useRouter } from "next/navigation";
 import EventBanner from "@/components/EventsBanner";
 import React from "react";
@@ -30,7 +29,7 @@ const page = (props) => {
           <Button
             variant="default"
             className=""
-            onClick={() => router.push("/console")}
+            onClick={() => router.push("/events")}
           >
             Go to Console
           </Button>
