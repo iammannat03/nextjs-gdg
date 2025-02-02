@@ -16,7 +16,14 @@ import { Button } from "../../../../components/ui/button"
 import Field from "../../../../components/field_input"
 
 const RegisterForm = () => {
-    const form = useForm({ resolver: zodResolver(formSchema) })
+    const form = useForm({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            event_id: "1",
+            name: "",
+            email: "",
+        }
+    })
 
     const onSubmit = (values) => {
         // TODO: Register for event

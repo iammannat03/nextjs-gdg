@@ -6,7 +6,13 @@ import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 
 const DatePicker = (props) => {
-  const formatDate = (date) => date.toLocaleDateString("en-IN");
+  const formatDate = (date) => {
+    const localDate = new Date(date);
+    return localDate.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+    });
+  };
+
   return (
     <div className="my-3 sm:my-5">
       <FormField

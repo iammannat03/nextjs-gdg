@@ -10,7 +10,10 @@ async function fetchEvents() {
 
     const events = await eventsCollection.find({}).toArray();
     client.close();
-    return JSON.parse(JSON.stringify(events));
+    return events.map((event) => ({
+      ...event,
+      _id: event._id.toString(), // Convert ObjectId to string for React compatibility
+    }));
   } catch (err) {
     throw new Error("Failed to fetch events from the database");
   }
@@ -53,8 +56,14 @@ export default async function EventsPage() {
                 />
                 <p>{event.desc}</p>
                 <div className="flex justify-between">
-                  <Link href={`/events/edit/${event._id}/`}>Edit</Link>
-                  <button>Register</button>
+                  <Link href={`/events/edit/${event._id}`}>Edit</Link>
+
+                  <Link
+                    href={`/events/delete/${event._id}`}
+                    className="text-red-400">
+                    Delete
+                  </Link>
+                  <Link href={`/events/register/${event._id}`}>Register</Link>
                 </div>
               </li>
             ))}

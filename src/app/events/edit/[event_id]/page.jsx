@@ -1,9 +1,7 @@
 import EventForm from "@/components/event_form";
 
 const UpdateEvent = async ({ params }) => {
-  // TODO: Get event details
-  const event_id = await params; // If params is a promise
-  console.log(event_id.event_id); // Access the event_id after awaiting
+  const event_id = await params;
 
   // try {
   const response = await fetch(

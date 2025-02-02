@@ -23,9 +23,21 @@ import Field from "./field_input";
 import DatePicker from "./datepicker_field";
 
 const EventForm = (props) => {
+  console.log(props.event);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: props.event ?? null,
+    defaultValues: props.event ?? {
+      event_id: "",
+      title: "",
+      venue: "",
+      start_date: new Date(),
+      end_date: new Date(),
+      startTime: "",
+      endTime: "",
+      desc: "",
+      image: "",
+    },
   });
   const [image, setImage] = useState(props.event?.image);
 
@@ -41,23 +53,44 @@ const EventForm = (props) => {
       // image: uploadedImageUrl,
     };
 
-    try {
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
-      });
+    if (!props.event) {
+      try {
+        const response = await fetch("/api/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
 
-      if (!response.ok) {
-        throw new Error("Event creation failed");
+        if (!response.ok) {
+          throw new Error("Event creation failed");
+        }
+
+        const data = await response.json();
+        console.log("Event created successfully:", data);
+      } catch (error) {
+        console.error("Error creating event:", error);
       }
+    } else {
+      try {
+        const response = await fetch(`/api/events?id=${props.event._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
 
-      const data = await response.json();
-      console.log("Event created successfully:", data);
-    } catch (error) {
-      console.error("Error creating event:", error);
+        if (!response.ok) {
+          throw new Error("Event updation failed");
+        }
+
+        const data = await response.json();
+        console.log("Event upadted successfully:", data);
+      } catch (error) {
+        console.error("Error updating event:", error);
+      }
     }
   };
 
