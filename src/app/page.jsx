@@ -1,3 +1,5 @@
+"use client";
+
 // components/Page.js
 "use client";
 
@@ -17,10 +19,16 @@ const Page = () => {
         <div className="flex items-center gap-x-3">
           {!data ? (
             <>
-              <Button variant="ghost" onClick={() => router.push("/sign-in")}>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/sign-in")}
+              >
                 Login
               </Button>
-              <Button variant="ghost" onClick={() => router.push("/sign-up")}>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/sign-up")}
+              >
                 Sign Up
               </Button>
             </>
