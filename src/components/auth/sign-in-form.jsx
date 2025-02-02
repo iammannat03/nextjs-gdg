@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { signIn } from "next-auth/react";
 
+import { checkGoogleSignIn } from "@/actions/check-google-sign-in"
+
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,11 @@ export function SignInForm() {
             setError("");
             setLoading(true);
 
+            if (checkGoogleSignIn(values.email)) {
+                throw new Error("Please Sign in with Google")
+            }
+
+            // Proceed with credentials login
             const result = await signIn("credentials", {
                 email: values.email,
                 password: values.password,

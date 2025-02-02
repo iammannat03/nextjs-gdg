@@ -86,8 +86,24 @@ export function SignUpForm() {
         }
     }
 
-    const handleGoogleSignIn = () => {
-        signIn("google", { callbackUrl: "/" });
+    const handleGoogleSignIn = async () => {
+        try {
+            const result = await signIn("google", { callbackUrl: "/" });
+    
+            if (result?.error) {
+                throw new Error(result.error);
+            }
+    
+            // Assuming the Google sign-in returns the user's name and email
+            const { name, email } = result.user;
+    
+            // Register the user with Google provider
+            await registerUser({ name, email, provider: "google" });
+    
+            router.push("/");
+        } catch (error) {
+            setError(error.message);
+        }
     };
 
     return (

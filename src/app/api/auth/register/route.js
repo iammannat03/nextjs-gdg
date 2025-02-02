@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { registerUser } from "@/actions/auth";
+import { registerUser } from "@/actions/post-auth";
 
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { name, email, password } = body;
+        const { name, email, password, provider = "credentials" } = body;
 
         if (!name || !email || !password) {
             return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(req) {
             );
         }
 
-        const user = await registerUser({ name, email, password });
+        const user = await registerUser({ name, email, password, provider });
 
         return NextResponse.json(user, { status: 201 });
     } catch (error) {

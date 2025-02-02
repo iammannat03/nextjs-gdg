@@ -1,7 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-import { loginUser } from "@/actions/auth";
+import { loginUser } from "@/actions/post-auth";
 import { User } from "@/models/user.model";
 
 export const authOptions = {
