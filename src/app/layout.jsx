@@ -1,3 +1,4 @@
+import { ClientSessionProvider } from "@/providers/session-provider"
 import "./globals.css";
 
 export const metadata = {
@@ -8,12 +9,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={"antialiased bg-black"}
-        suppressHydrationWarning
-      >
-        {children}
-      </body>
+      <ClientSessionProvider>
+        <body
+          className={"antialiased bg-black"}
+          suppressHydrationWarning
+        >
+          {children}
+        </body>
+      </ClientSessionProvider>
     </html>
   );
 }
