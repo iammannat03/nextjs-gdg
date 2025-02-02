@@ -28,7 +28,8 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/app/events/new/page.jsx"
+    "src/app/events/new/page.jsx",
+    "src/app/events/page.jsx"
   ],
   "exclude": ["node_modules"]
 }

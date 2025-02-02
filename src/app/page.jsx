@@ -1,3 +1,5 @@
+"use client";
+
 // components/Page.js
 import { Button } from "../components/ui/button";
 import { useRouter } from "next/navigation";
@@ -17,10 +19,16 @@ const Page = () => {
         <div className="flex gap-x-3 items-center">
           {!data ? (
             <>
-              <Button variant="ghost" onClick={() => router.push("/sign-in")}>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/sign-in")}
+              >
                 Login
               </Button>
-              <Button variant="ghost" onClick={() => router.push("/sign-up")}>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/sign-up")}
+              >
                 Sign Up
               </Button>
             </>
