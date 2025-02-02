@@ -61,7 +61,7 @@ export async function PUT(req, res) {
       );
     }
 
-    return new Response(JSON.stringify({ success: true, data: updatedEvent }), {
+    return new Response(JSON.stringify(updatedEvent), {
       status: 200,
     });
   } catch (error) {
@@ -102,26 +102,5 @@ export async function DELETE(req, res) {
         status: 400,
       }
     );
-  }
-}
-
-// Fallback: Handle unsupported HTTP methods
-export async function handler(req, res) {
-  switch (req.method) {
-    case "GET":
-      return GET(req, res);
-    case "POST":
-      return POST(req, res);
-    case "PUT":
-      return PUT(req, res);
-    case "DELETE":
-      return DELETE(req, res);
-    default:
-      return new Response(
-        JSON.stringify({ success: false, message: "Method not allowed" }),
-        {
-          status: 405,
-        }
-      );
   }
 }

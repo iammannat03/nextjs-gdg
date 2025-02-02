@@ -23,8 +23,6 @@ import Field from "./field_input";
 import DatePicker from "./datepicker_field";
 
 const EventForm = (props) => {
-  console.log(props.event);
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: props.event ?? {

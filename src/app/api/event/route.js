@@ -9,7 +9,6 @@ export async function GET(req, res) {
   const event_id = url.searchParams.get("id"); // Extract event_id from the query params
 
   try {
-    // Fetch the event by its ID
     const event = await Events.findById(event_id);
 
     if (!event) {
