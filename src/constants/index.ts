@@ -14,7 +14,7 @@ export const items = [
   },
   {
     title: "Events",
-    url: "/console/",
+    url: "/console/events",
     icon: Inbox,
   },
   {
