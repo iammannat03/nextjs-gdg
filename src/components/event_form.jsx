@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { addEvent, updateEvent } from "@/actions/actions";
 
 const formSchema = z.object({
   title: z.string(),
@@ -44,70 +45,30 @@ const EventForm = (props) => {
   }, [image]);
 
   const onSubmit = async (values) => {
-    // const uploadedImageUrl = await uploadImageToCloudinary(values.image[0]);
-
     const eventData = {
       ...values,
-      // image: uploadedImageUrl,
     };
 
     if (!props.event) {
       try {
-        const response = await fetch("/api/events", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        });
-
-        if (!response.ok) {
+        const event = addEvent(eventData);
+        if (!event) {
           throw new Error("Event creation failed");
         }
-
-        const data = await response.json();
-        console.log("Event created successfully:", data);
       } catch (error) {
         console.error("Error creating event:", error);
       }
     } else {
       try {
-        const response = await fetch(`/api/events?id=${props.event._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Event updation failed");
+        const event = updateEvent(props.event._id, eventData);
+        if (!event) {
+          throw new Error("Event update failed");
         }
-
-        const data = await response.json();
-        console.log("Event upadted successfully:", data);
       } catch (error) {
         console.error("Error updating event:", error);
       }
     }
   };
-
-  // Function to handle image upload to Cloudinary
-  // const uploadImageToCloudinary = async (file) => {
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   formData.append("upload_preset", "YOUR_CLOUDINARY_UPLOAD_PRESET"); // Replace with your Cloudinary preset
-  //   const cloudinaryUrl =
-  //     "https://api.cloudinary.com/v1_1/YOUR_CLOUDINARY_CLOUD_NAME/image/upload"; // Replace with your Cloudinary URL
-
-  //   const response = await fetch(cloudinaryUrl, {
-  //     method: "POST",
-  //     body: formData,
-  //   });
-
-  //   const data = await response.json();
-  //   return data.secure_url; // Returns the image URL from Cloudinary
-  // };
 
   return (
     <Form {...form}>

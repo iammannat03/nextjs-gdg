@@ -11,11 +11,11 @@ const EventSchema = new mongoose.Schema(
       required: true,
     },
     start_date: {
-      type: String,
+      type: Date,
       required: true,
     },
     end_date: {
-      type: String,
+      type: Date,
       required: true,
     },
     start_time: {
@@ -38,5 +38,6 @@ const EventSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Events || mongoose.model("Events", EventSchema);
+export const Events =
+  mongoose.models.Events || mongoose.model("Events", EventSchema);
 // check if user model is already created or not

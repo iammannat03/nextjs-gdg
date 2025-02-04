@@ -1,27 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MongoClient } from "mongodb";
+import { fetchEvents } from "@/actions/actions";
 
-// SSF
-
-async function fetchEvents() {
-  try {
-    const client = await MongoClient.connect(process.env.MONGO_URI);
-    const db = client.db();
-    const eventsCollection = db.collection("events");
-
-    const events = await eventsCollection.find({}).toArray();
-    client.close();
-    return events.map((event) => ({
-      ...event,
-      _id: event._id.toString(), // Converting ObjectId to string for React compatibility
-    }));
-  } catch (err) {
-    throw new Error("Failed to fetch events from the database");
-  }
-}
-
-export default async function EventsPage() {
+async function EventsPage() {
   let events = [];
   let error = null;
 
@@ -64,14 +45,16 @@ export default async function EventsPage() {
                 />
                 <p>{event.desc}</p>
                 <div className="flex justify-between">
-                  <Link href={`/events/edit/${event._id}`}>Edit</Link>
+                  <Link href={`/console/events/edit/${event._id}`}>Edit</Link>
 
                   <Link
-                    href={`/events/delete/${event._id}`}
+                    href={`/console/events/delete/${event._id}`}
                     className="text-red-400">
                     Delete
                   </Link>
-                  <Link href={`/events/register/${event._id}`}>Register</Link>
+                  <Link href={`/console/events/register/${event._id}`}>
+                    Register
+                  </Link>
                 </div>
               </li>
             ))}
@@ -81,3 +64,5 @@ export default async function EventsPage() {
     </div>
   );
 }
+
+export default EventsPage;
