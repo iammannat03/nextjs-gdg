@@ -4,6 +4,7 @@
 "use client";
 
 import { Button } from "../components/ui/button";
+import EventsBanner from "../components/EventsBanner"
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -49,6 +50,7 @@ const Page = () => {
         </div>
       </nav>
       <span className="text-4xl font-bold"></span>
+        <EventsBanner />
     </div>
   );
 };
