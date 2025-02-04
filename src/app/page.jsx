@@ -15,7 +15,9 @@ const Page = () => {
   return (
     <div className="container flex flex-col justify-between mx-auto my-5">
       <nav className="flex items-center justify-between w-full px-4 py-2 mx-auto text-white bg-gray-900 border rounded-lg">
-        <div className="text-xl font-semibold text-white">MeowManager</div>
+        <div className="text-xl font-semibold text-white">
+          MeowManager
+        </div>
         <div className="flex items-center gap-x-3">
           {!data ? (
             <>
@@ -38,10 +40,14 @@ const Page = () => {
                 variant="ghost"
                 onClick={() => {
                   signOut();
-                }}>
+                }}
+              >
                 Logout
               </Button>
-              <Button variant="default" onClick={() => router.push("/events")}>
+              <Button
+                variant="default"
+                onClick={() => router.push("/console")}
+              >
                 Go to Console
               </Button>
             </>

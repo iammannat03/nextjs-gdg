@@ -28,8 +28,12 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/app/events/new/page.jsx",
-    "src/app/events/page.jsx"
+    "src/app/console/new/page.jsx",
+    "src/app/console/page.jsx",
+    "src/app/console/layout.jsx",
+    "src/components/app-sidebar.jsx",
+    "src/app/console/profile/page.jsx",
+    "src/app/console/settings/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
