@@ -17,7 +17,6 @@ export const fetchEvent = async (id) => {
 export const fetchEvents = async () => {
   try {
     connectToDb();
-
     const events = await Events.find();
     return events;
   } catch (err) {
@@ -31,7 +30,6 @@ export const deleteEvent = async (formData) => {
     connectToDb();
     await Events.findByIdAndDelete(id);
     revalidatePath("/events");
-    return true;
   } catch (err) {
     throw new Error("Failed to delete the event");
   }
@@ -43,7 +41,7 @@ export const updateEvent = async (id, newData) => {
     const event = await Events.findById(id);
     Object.assign(event, newData);
     await event.save();
-    revalidatePath("/events");
+    revalidatePath("/console/events/");
   } catch (err) {
     throw new Error("Failed to fetch event details");
   }
@@ -54,7 +52,7 @@ export const addEvent = async (data) => {
     connectToDb();
     const newEvent = new Events(data);
     await newEvent.save();
-    revalidatePath("/events");
+    revalidatePath("/console/events/");
   } catch (err) {
     throw new Error("Failed to add event");
   }

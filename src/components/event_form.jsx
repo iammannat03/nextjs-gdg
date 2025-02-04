@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { addEvent, updateEvent } from "@/actions/actions";
 
+import { useRouter } from "next/navigation";
+
 const formSchema = z.object({
   title: z.string(),
   venue: z.string(),
@@ -24,6 +26,8 @@ import Field from "./field_input";
 import DatePicker from "./datepicker_field";
 
 const EventForm = (props) => {
+  const router = useRouter();
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: props.event ?? {
@@ -52,6 +56,7 @@ const EventForm = (props) => {
     if (!props.event) {
       try {
         const event = addEvent(eventData);
+        router.push("/console/events");
         if (!event) {
           throw new Error("Event creation failed");
         }
@@ -61,6 +66,7 @@ const EventForm = (props) => {
     } else {
       try {
         const event = updateEvent(props.event._id, eventData);
+        router.push("/console/events");
         if (!event) {
           throw new Error("Event update failed");
         }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { fetchEvents } from "@/actions/actions";
+import { deleteEvent } from "@/actions/actions";
 
 async function EventsPage() {
   let events = [];
@@ -15,7 +16,6 @@ async function EventsPage() {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
   return (
     <div>
       {events.length === 0 ? (
@@ -46,12 +46,21 @@ async function EventsPage() {
                 <p>{event.desc}</p>
                 <div className="flex justify-between">
                   <Link href={`/console/events/edit/${event._id}`}>Edit</Link>
-
-                  <Link
+                  {/* <Link
                     href={`/console/events/delete/${event._id}`}
                     className="text-red-400">
                     Delete
-                  </Link>
+                  </Link> */}
+                  <form action={deleteEvent}>
+                    <input
+                      type="hidden"
+                      name="id"
+                      value={event._id.toString()}
+                    />
+                    <button type="submit" className="text-red-500 ">
+                      Delete
+                    </button>
+                  </form>
                   <Link href={`/console/events/register/${event._id}`}>
                     Register
                   </Link>
