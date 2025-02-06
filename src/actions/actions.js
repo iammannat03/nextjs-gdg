@@ -8,7 +8,19 @@ export const fetchEvent = async (id) => {
   try {
     connectToDb();
     const event = await Events.findById(id);
-    return event._doc;
+
+    // Serialize the MongoDB document to plain JavaScript object
+    const serializedEvent = {
+      ...JSON.parse(JSON.stringify(event._doc)),
+      _id: event._id.toString(),
+      start_date: event.start_date?.toISOString(),
+      end_date: event.end_date?.toISOString(),
+      createdAt: event.createdAt?.toISOString(),
+      updatedAt: event.updatedAt?.toISOString(),
+      register_status: Boolean(event.register_status),
+    };
+
+    return serializedEvent;
   } catch (err) {
     throw new Error("Failed to fetch event details");
   }
@@ -20,7 +32,9 @@ export const fetchEvents = async () => {
     const events = await Events.find();
     return events;
   } catch (err) {
-    throw new Error("Failed to fetch events from the database");
+    throw new Error(
+      "Failed to fetch events from the database"
+    );
   }
 };
 
@@ -53,7 +67,32 @@ export const addEvent = async (data) => {
     const newEvent = new Events(data);
     await newEvent.save();
     revalidatePath("/console/events/");
+
+    // Serialize the Mongoose document before returning
+    const serializedEvent = {
+      ...JSON.parse(JSON.stringify(newEvent._doc)),
+      _id: newEvent._id.toString(),
+      start_date: newEvent.start_date?.toISOString(),
+      end_date: newEvent.end_date?.toISOString(),
+      createdAt: newEvent.createdAt?.toISOString(),
+      updatedAt: newEvent.updatedAt?.toISOString(),
+      register_status: Boolean(newEvent.register_status),
+    };
+
+    return serializedEvent;
   } catch (err) {
     throw new Error("Failed to add event");
+  }
+};
+
+export const updateRegisterStatus = async (id, status) => {
+  try {
+    connectToDb();
+    const event = await Events.findById(id);
+    event.register_status = status;
+    await event.save();
+    revalidatePath("/console/events/");
+  } catch (err) {
+    throw new Error("Failed to update register status");
   }
 };

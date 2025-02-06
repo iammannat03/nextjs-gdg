@@ -43,7 +43,9 @@ const Page = () => {
               </Button>
               <Button
                 variant="default"
-                onClick={() => router.push("/console")}
+                onClick={() =>
+                  router.push("/console/events")
+                }
               >
                 Go to Console
               </Button>

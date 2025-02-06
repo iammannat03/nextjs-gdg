@@ -34,10 +34,15 @@ const EventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    register_status: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
 export const Events =
-  mongoose.models.Events || mongoose.model("Events", EventSchema);
+  mongoose.models.Events ||
+  mongoose.model("Events", EventSchema);
 // check if user model is already created or not

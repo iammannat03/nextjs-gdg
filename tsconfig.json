@@ -33,7 +33,8 @@
     "src/app/console/layout.jsx",
     "src/components/app-sidebar.jsx",
     "src/app/console/profile/page.jsx",
-    "src/app/console/settings/page.jsx"
+    "src/app/console/settings/page.jsx",
+    "src/middleware.js"
   ],
   "exclude": ["node_modules"]
 }

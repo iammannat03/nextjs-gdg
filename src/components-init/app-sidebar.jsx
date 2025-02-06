@@ -15,22 +15,14 @@ import { items } from "@/constants";
 export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarContent className="bg-black">
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            NEXT.JS WORKSHOP
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  className=""
-                >
-                  <SidebarMenuButton
-                    asChild
-                    className="hover:bg-white/5 text-white/75 hover:text-white"
-                  >
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

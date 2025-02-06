@@ -4,15 +4,14 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { addEvent, updateEvent } from "@/actions/actions"; // Adjust the import path as needed
+import { addEvent, updateEvent } from "@/actions/actions";
+
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   title: z.string(),
   venue: z.string(),
-  start_date: z
-    .date()
-    .min(new Date(), "Start date must be in the future"),
+  start_date: z.date().min(new Date(), "Start date must be in the future"),
   end_date: z.date(),
   start_time: z.string(),
   end_time: z.string(),
@@ -25,27 +24,22 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Field from "./field_input";
 import DatePicker from "./datepicker_field";
-import { Loader } from "lucide-react";
 
 const EventForm = (props) => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [event, setEvent] = useState(props.event || null);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: props.event?.title || "",
-      venue: props.event?.venue || "",
-      start_date: props.event?.start_date
-        ? new Date(props.event.start_date)
-        : new Date(),
-      end_date: props.event?.end_date
-        ? new Date(props.event.end_date)
-        : new Date(),
-      start_time: props.event?.start_time || "",
-      end_time: props.event?.end_time || "",
-      desc: props.event?.desc || "",
-      image: props.event?.image || "",
+    defaultValues: props.event ?? {
+      event_id: "",
+      title: "",
+      venue: "",
+      start_date: new Date(),
+      end_date: new Date(),
+      startTime: "",
+      endTime: "",
+      desc: "",
+      image: "",
     },
   });
   const [image, setImage] = useState(props.event?.image);
@@ -55,62 +49,39 @@ const EventForm = (props) => {
   }, [image]);
 
   const onSubmit = async (values) => {
-    setIsLoading(true);
-    // const uploadedImageUrl = await uploadImageToCloudinary(values.image[0]);
-
     const eventData = {
       ...values,
-      // image: uploadedImageUrl,
     };
 
     if (!props.event) {
       try {
-        const newEvent = await addEvent(eventData);
-        console.log("Event created successfully", newEvent);
-        setEvent(newEvent);
-        console.log("newEvent", newEvent);
-        router.push(`/console/events/${newEvent._id}`);
+        const event = addEvent(eventData);
+        router.push("/console/events");
+        if (!event) {
+          throw new Error("Event creation failed");
+        }
       } catch (error) {
         console.error("Error creating event:", error);
       }
     } else {
       try {
-        await updateEvent(props.event._id, eventData);
-        setEvent(eventData);
-        console.log("Event updated successfully");
-        router.push(`/console/events/${props.event._id}`);
+        const event = updateEvent(props.event._id, eventData);
+        router.push("/console/events");
+        if (!event) {
+          throw new Error("Event update failed");
+        }
       } catch (error) {
         console.error("Error updating event:", error);
       }
     }
-
-    setIsLoading(false);
   };
-
-  // Function to handle image upload to Cloudinary
-  // const uploadImageToCloudinary = async (file) => {
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   formData.append("upload_preset", "YOUR_CLOUDINARY_UPLOAD_PRESET"); // Replace with your Cloudinary preset
-  //   const cloudinaryUrl =
-  //     "https://api.cloudinary.com/v1_1/YOUR_CLOUDINARY_CLOUD_NAME/image/upload"; // Replace with your Cloudinary URL
-
-  //   const response = await fetch(cloudinaryUrl, {
-  //     method: "POST",
-  //     body: formData,
-  //   });
-
-  //   const data = await response.json();
-  //   return data.secure_url; // Returns the image URL from Cloudinary
-  // };
 
   return (
     <Form {...form}>
       <form
         autoComplete="off"
         onSubmit={form.handleSubmit(onSubmit)}
-        method="post"
-      >
+        method="post">
         {/* Title field */}
         <Field form={form} {...fields.title} />
 
@@ -167,31 +138,14 @@ const EventForm = (props) => {
         )}
 
         {/* Description field */}
-        <Field
-          type={props.event}
-          form={form}
-          {...fields.desc}
-          textarea
-        />
+        <Field type={props.event} form={form} {...fields.desc} textarea />
 
         {/* Hidden input for event ID (if updating an existing event) */}
-        <input
-          type="hidden"
-          name="event_id"
-          value={props.event?.id ?? ""}
-        />
+        <input type="hidden" name="event_id" value={props.event?.id ?? ""} />
 
         {/* Submit button */}
-        <Button
-          className="w-full"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader className="animate-spin" />
-          ) : (
-            `${props.event ? "Update" : "Create"} Event`
-          )}
+        <Button className="w-full" type="submit">
+          {props.event ? "Update" : "Create"} Event
         </Button>
       </form>
     </Form>
