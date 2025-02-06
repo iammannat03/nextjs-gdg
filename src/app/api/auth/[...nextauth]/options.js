@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { loginUser } from "@/actions/post-auth";
 import { User } from "@/models/user.model";
+import { connect } from "@/db";
 
 export const authOptions = {
     providers: [
@@ -38,7 +39,6 @@ export const authOptions = {
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             async profile(profile) {
-                // Create or update user when signing in with Google
                 await connect();
                 
                 let user = await User.findOne({ email: profile.email });
@@ -47,8 +47,8 @@ export const authOptions = {
                     user = await User.create({
                         name: profile.name,
                         email: profile.email,
-                        password: Math.random().toString(36).slice(-8), // Generate random password
                         isActive: true,
+                        provider: 'google'
                     });
                 }
 
