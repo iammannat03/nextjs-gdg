@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { addEvent, updateEvent } from "@/actions/actions"; // Adjust the import path as needed
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
 
 const formSchema = z.object({
   title: z.string(),
@@ -29,6 +31,7 @@ import { Loader } from "lucide-react";
 
 const EventForm = (props) => {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [event, setEvent] = useState(props.event || null);
   const form = useForm({
@@ -55,6 +58,12 @@ const EventForm = (props) => {
   }, [image]);
 
   const onSubmit = async (values) => {
+    if (!session) {
+      toast.error("Please login to create events");
+      router.push("/login");
+      return;
+    }
+
     setIsLoading(true);
     // const uploadedImageUrl = await uploadImageToCloudinary(values.image[0]);
 
@@ -65,13 +74,19 @@ const EventForm = (props) => {
 
     if (!props.event) {
       try {
-        const newEvent = await addEvent(eventData);
+        const newEvent = await addEvent(
+          eventData,
+          session.user.id
+        );
         console.log("Event created successfully", newEvent);
         setEvent(newEvent);
         console.log("newEvent", newEvent);
         router.push(`/console/events/${newEvent._id}`);
       } catch (error) {
         console.error("Error creating event:", error);
+        toast.error(
+          error.message || "Failed to create event"
+        );
       }
     } else {
       try {
@@ -81,6 +96,9 @@ const EventForm = (props) => {
         router.push(`/console/events/${props.event._id}`);
       } catch (error) {
         console.error("Error updating event:", error);
+        toast.error(
+          error.message || "Failed to update event"
+        );
       }
     }
 

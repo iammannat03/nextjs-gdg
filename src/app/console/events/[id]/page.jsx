@@ -21,17 +21,24 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
+  deleteEvent,
   fetchEvent,
   updateRegisterStatus,
 } from "@/actions/actions";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
+
 const EventDetailsPage = ({ params }) => {
   const router = useRouter();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { id } = use(params);
+  const { data: session } = useSession();
 
   useEffect(() => {
+    console.log("fetcjhing..");
     const fetchData = async () => {
       try {
         const data = await fetchEvent(id);
@@ -72,6 +79,11 @@ const EventDetailsPage = ({ params }) => {
       );
     }
   };
+
+  // Fix the creator check by converting IDs to strings for comparison
+  const isCreator =
+    session?.user?._id?.toString() ===
+    event?.creator?._id?.toString();
 
   return (
     <>
@@ -154,12 +166,59 @@ const EventDetailsPage = ({ params }) => {
             </div>
 
             <div className="p-6 flex justify-end space-x-4 border-t">
-              <Button variant="outline">Share Event</Button>
-              <Button onClick={handleRegister}>
-                {event.register_status
-                  ? "Unregister"
-                  : "Register"}
-              </Button>
+              {isCreator ? (
+                // Show Edit and Delete buttons for creator
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      router.push(
+                        `/console/events/edit/${event._id}`
+                      )
+                    }
+                  >
+                    Edit Event
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-[112px]"
+                    onClick={async () => {
+                      try {
+                        setIsDeleting(true);
+                        await deleteEvent(event._id);
+                        toast.success(
+                          "Event deleted successfully"
+                        );
+                        router.push("/console/events");
+                      } catch (error) {
+                        toast.error(
+                          "Failed to delete event"
+                        );
+                      } finally {
+                        setIsDeleting(false);
+                      }
+                    }}
+                  >
+                    {isDeleting ? (
+                      <Loader className="animate-spin" />
+                    ) : (
+                      "Delete Event"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                // Show Share and Register buttons for non-creators
+                <>
+                  <Button variant="outline">
+                    Share Event
+                  </Button>
+                  <Button onClick={handleRegister}>
+                    {event.register_status
+                      ? "Unregister"
+                      : "Register"}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -17,12 +17,19 @@ import { useEffect, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import PageTitle from "@/components/page-title";
+import {
+  registerForEvent,
+  unregisterFromEvent,
+} from "@/actions/actions";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -46,6 +53,67 @@ export default function EventsPage() {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
+  const handleRegistration = async (eventId) => {
+    if (!session) {
+      toast.error("Please login to register for events");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const userId = session.user.id;
+      await registerForEvent(eventId, userId);
+      toast.success("Successfully registered for event!");
+
+      // Update the events list to reflect the new registration
+      setEvents(
+        events.map((event) => {
+          if (event._id === eventId) {
+            return {
+              ...event,
+              registeredUsers: [
+                ...event.registeredUsers,
+                userId,
+              ],
+            };
+          }
+          return event;
+        })
+      );
+    } catch (error) {
+      toast.error(
+        error.message || "Failed to register for event"
+      );
+    }
+  };
+
+  const handleUnregister = async (eventId) => {
+    if (!session) return;
+
+    try {
+      const userId = session.user.id;
+      await unregisterFromEvent(eventId, userId);
+      toast.success("Successfully unregistered from event");
+
+      // Update the events list to reflect the unregistration
+      setEvents(
+        events.map((event) => {
+          if (event._id === eventId) {
+            return {
+              ...event,
+              registeredUsers: event.registeredUsers.filter(
+                (id) => id !== userId
+              ),
+            };
+          }
+          return event;
+        })
+      );
+    } catch (error) {
+      toast.error("Failed to unregister from event");
+    }
+  };
 
   return (
     <main className="w-full">
@@ -76,8 +144,8 @@ export default function EventsPage() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {events.map((event) => (
                   <Link
-                    key={event._id}
                     href={`/console/events/${event._id}`}
+                    key={event._id}
                   >
                     <Card className="h-full flex flex-col">
                       <CardHeader>
@@ -88,10 +156,6 @@ export default function EventsPage() {
                           height={200}
                           className="w-full object-cover rounded-md"
                         />
-                        {/* <CardTitle>{event.title}</CardTitle>
-                        <CardDescription>
-                          {event.venue}
-                        </CardDescription> */}
                       </CardHeader>
                       <div className="flex h-full flex-col justify-between">
                         <CardContent className="space-y-4">
@@ -100,52 +164,60 @@ export default function EventsPage() {
                               <CardTitle>
                                 {event.title}
                               </CardTitle>
-                              {/* <p>
-                                  {new Date(
-                                    event.start_date
-                                  ).toLocaleDateString()}
-                                </p>
-                                <p>
-                                  {new Date(
-                                    event.end_date
-                                  ).toLocaleDateString()}
-                                </p> */}
                             </div>
-                            {/* <div className="flex justify-between text-sm text-muted-foreground">
-                                <p>{event.start_time}</p>
-                                <p>{event.end_time}</p>
-                              </div> */}
                             <p className="text-sm">
                               {event.desc}
                             </p>
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between">
-                          {/* <Link href={`events/${event.id}`}>
-                              More info
-                            </Link> */}
-                          {/* <Link
-                              href={`/events/edit/${event._id}`}
-                              className="text-blue-500 hover:text-blue-700"
+                          {session?.user.id ===
+                          event.creator ? (
+                            <div className="flex gap-2 w-full">
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  router.push(
+                                    `/console/events/edit/${event._id}`
+                                  )
+                                }
+                              >
+                                Edit Event
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                const isRegistered =
+                                  event.registeredUsers?.includes(
+                                    session?.user.id
+                                  );
+                                if (isRegistered) {
+                                  handleUnregister(
+                                    event._id
+                                  );
+                                } else {
+                                  handleRegistration(
+                                    event._id
+                                  );
+                                }
+                              }}
+                              className="w-full"
+                              variant={
+                                event.registeredUsers?.includes(
+                                  session?.user.id
+                                )
+                                  ? "destructive"
+                                  : "default"
+                              }
                             >
-                              Edit
-                            </Link>
-                            <Link
-                              href={`/events/delete/${event._id}`}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              Delete
-                            </Link> */}
-                          <Button
-                            onClick={() =>
-                              router.push(
-                                `/events/register/${event._id}`
+                              {event.registeredUsers?.includes(
+                                session?.user.id
                               )
-                            }
-                            className="w-full"
-                          >
-                            Register
-                          </Button>
+                                ? "Unregister"
+                                : "Register"}
+                            </Button>
+                          )}
                         </CardFooter>
                       </div>
                     </Card>

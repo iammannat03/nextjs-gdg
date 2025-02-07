@@ -2,26 +2,62 @@
 
 import { connectToDb } from "@/db/dbConnect";
 import { Events } from "@/models/events";
+import { User } from "@/models/user.model";
 import { revalidatePath } from "next/cache";
 
 export const fetchEvent = async (id) => {
   try {
     connectToDb();
-    const event = await Events.findById(id);
+    console.log("event fetching");
+    const event = await Events.findById(id)
+      .populate({
+        path: "creator",
+        model: User,
+        select: "name email",
+      })
+      .populate({
+        path: "registeredUsers",
+        model: User,
+        select: "name email",
+      });
+    console.log("event fetxhed", event);
+    if (!event) {
+      throw new Error("Event not found");
+    }
 
-    // Serialize the MongoDB document to plain JavaScript object
+    // Safely serialize the MongoDB document to plain JavaScript object
     const serializedEvent = {
       ...JSON.parse(JSON.stringify(event._doc)),
       _id: event._id.toString(),
-      start_date: event.start_date?.toISOString(),
-      end_date: event.end_date?.toISOString(),
-      createdAt: event.createdAt?.toISOString(),
-      updatedAt: event.updatedAt?.toISOString(),
+      start_date: event.start_date
+        ? new Date(event.start_date).toISOString()
+        : null,
+      end_date: event.end_date
+        ? new Date(event.end_date).toISOString()
+        : null,
+      createdAt: event.createdAt
+        ? new Date(event.createdAt).toISOString()
+        : null,
+      updatedAt: event.updatedAt
+        ? new Date(event.updatedAt).toISOString()
+        : null,
       register_status: Boolean(event.register_status),
+      creator: event.creator
+        ? event.creator._id.toString()
+        : null,
+      registeredUsers: event.registeredUsers
+        ? event.registeredUsers.map((user) =>
+            user._id.toString()
+          )
+        : [],
     };
 
     return serializedEvent;
   } catch (err) {
+    console.error("Error fetching event:", err);
+    if (err.message === "Event not found") {
+      throw new Error("Event not found");
+    }
     throw new Error("Failed to fetch event details");
   }
 };
@@ -29,7 +65,17 @@ export const fetchEvent = async (id) => {
 export const fetchEvents = async () => {
   try {
     connectToDb();
-    const events = await Events.find();
+    const events = await Events.find()
+      .populate({
+        path: "creator",
+        model: User,
+        select: "name email",
+      })
+      .populate({
+        path: "registeredUsers",
+        model: User,
+        select: "name email",
+      });
     return events;
   } catch (err) {
     throw new Error(
@@ -38,8 +84,7 @@ export const fetchEvents = async () => {
   }
 };
 
-export const deleteEvent = async (formData) => {
-  const { id } = Object.fromEntries(formData);
+export const deleteEvent = async (id) => {
   try {
     connectToDb();
     await Events.findByIdAndDelete(id);
@@ -61,10 +106,14 @@ export const updateEvent = async (id, newData) => {
   }
 };
 
-export const addEvent = async (data) => {
+export const addEvent = async (data, userId) => {
   try {
     connectToDb();
-    const newEvent = new Events(data);
+    const newEvent = new Events({
+      ...data,
+      creator: userId,
+      registeredUsers: [],
+    });
     await newEvent.save();
     revalidatePath("/console/events/");
 
@@ -77,11 +126,13 @@ export const addEvent = async (data) => {
       createdAt: newEvent.createdAt?.toISOString(),
       updatedAt: newEvent.updatedAt?.toISOString(),
       register_status: Boolean(newEvent.register_status),
+      creator: newEvent.creator.toString(),
+      registeredUsers: [],
     };
 
     return serializedEvent;
   } catch (err) {
-    throw new Error("Failed to add event");
+    throw new Error(err.message);
   }
 };
 
@@ -94,5 +145,62 @@ export const updateRegisterStatus = async (id, status) => {
     revalidatePath("/console/events/");
   } catch (err) {
     throw new Error("Failed to update register status");
+  }
+};
+
+export const registerForEvent = async (eventId, userId) => {
+  try {
+    connectToDb();
+    const event = await Events.findById(eventId);
+
+    // Check if user is already registered
+    if (event.registeredUsers.includes(userId)) {
+      // todo: toast for this action instead of throwing error
+      throw new Error(
+        "User already registered for this event"
+      );
+    }
+
+    // Add user to registered users
+    event.registeredUsers.push(userId);
+    await event.save();
+    revalidatePath("/console/events");
+
+    return event;
+  } catch (err) {
+    throw new Error(
+      err.message || "Failed to register for event"
+    );
+  }
+};
+
+export const unregisterFromEvent = async (
+  eventId,
+  userId
+) => {
+  try {
+    connectToDb();
+    const event = await Events.findById(eventId);
+
+    // Remove user from registered users
+    event.registeredUsers = event.registeredUsers.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+    await event.save();
+    revalidatePath("/events");
+
+    return event;
+  } catch (err) {
+    throw new Error("Failed to unregister from event");
+  }
+};
+
+export const isEventCreator = async (eventId, userId) => {
+  try {
+    connectToDb();
+    const event = await Events.findById(eventId);
+    return event.creator.toString() === userId.toString();
+  } catch (err) {
+    return false;
   }
 };

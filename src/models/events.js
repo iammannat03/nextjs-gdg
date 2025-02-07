@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { User } from "./user.model";
 
 const EventSchema = new mongoose.Schema(
   {
@@ -38,6 +39,17 @@ const EventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    registeredUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );
