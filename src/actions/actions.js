@@ -76,7 +76,41 @@ export const fetchEvents = async () => {
         model: User,
         select: "name email",
       });
-    return events;
+
+    // Serialize the events array
+    const serializedEvents = events.map((event) => ({
+      ...JSON.parse(JSON.stringify(event._doc)),
+      _id: event._id.toString(),
+      start_date: event.start_date
+        ? new Date(event.start_date).toISOString()
+        : null,
+      end_date: event.end_date
+        ? new Date(event.end_date).toISOString()
+        : null,
+      createdAt: event.createdAt
+        ? new Date(event.createdAt).toISOString()
+        : null,
+      updatedAt: event.updatedAt
+        ? new Date(event.updatedAt).toISOString()
+        : null,
+      register_status: Boolean(event.register_status),
+      creator: event.creator
+        ? {
+            _id: event.creator._id.toString(),
+            name: event.creator.name,
+            email: event.creator.email,
+          }
+        : null,
+      registeredUsers: event.registeredUsers
+        ? event.registeredUsers.map((user) => ({
+            _id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+          }))
+        : [],
+    }));
+
+    return serializedEvents;
   } catch (err) {
     throw new Error(
       "Failed to fetch events from the database"

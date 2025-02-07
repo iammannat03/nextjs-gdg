@@ -20,6 +20,7 @@ import PageTitle from "@/components/page-title";
 import {
   registerForEvent,
   unregisterFromEvent,
+  fetchEvents,
 } from "@/actions/actions";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -32,26 +33,34 @@ export default function EventsPage() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/events");
-        if (!response.ok) {
-          throw new Error("Failed to fetch events");
-        }
-        const data = await response.json();
-        setEvents(data);
+        const data = await fetchEvents();
+        // Convert MongoDB documents to plain JavaScript objects
+        const serializedEvents = JSON.parse(
+          JSON.stringify(data || [])
+        );
+        setEvents(serializedEvents);
         setLoading(false);
       } catch (err) {
         setError(err.message);
+        setLoading(false);
       }
     };
 
-    fetchEvents();
+    loadEvents();
   }, []);
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-xl font-medium">
+          Unable to load events.
+          <br /> Please try again later.
+        </p>
+      </div>
+    );
   }
 
   const handleRegistration = async (eventId) => {
@@ -171,8 +180,8 @@ export default function EventsPage() {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between">
-                          {session?.user.id ===
-                          event.creator ? (
+                          {session?.user._id ===
+                          event.creator?._id ? (
                             <div className="flex gap-2 w-full">
                               <Button
                                 variant="outline"
@@ -189,8 +198,10 @@ export default function EventsPage() {
                             <Button
                               onClick={() => {
                                 const isRegistered =
-                                  event.registeredUsers?.includes(
-                                    session?.user.id
+                                  event.registeredUsers?.some(
+                                    (user) =>
+                                      user._id ===
+                                      session?.user.id
                                   );
                                 if (isRegistered) {
                                   handleUnregister(
@@ -204,15 +215,19 @@ export default function EventsPage() {
                               }}
                               className="w-full"
                               variant={
-                                event.registeredUsers?.includes(
-                                  session?.user.id
+                                event.registeredUsers?.some(
+                                  (user) =>
+                                    user._id ===
+                                    session?.user.id
                                 )
                                   ? "destructive"
                                   : "default"
                               }
                             >
-                              {event.registeredUsers?.includes(
-                                session?.user.id
+                              {event.registeredUsers?.some(
+                                (user) =>
+                                  user._id ===
+                                  session?.user.id
                               )
                                 ? "Unregister"
                                 : "Register"}
