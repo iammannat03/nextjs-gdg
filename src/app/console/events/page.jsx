@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import PageTitle from "@/components/page-title";
 
