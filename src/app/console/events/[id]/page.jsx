@@ -82,8 +82,13 @@ const EventDetailsPage = ({ params }) => {
 
   // Fix the creator check by converting IDs to strings for comparison
   const isCreator =
-    session?.user?._id?.toString() ===
-    event?.creator?._id?.toString();
+    session?.user?.id?.toString() ===
+    event?.creator.toString();
+
+  const creatorId = event?.creator?.toString();
+  const loggedUserId = session?.user?.id;
+  console.log("creatorId", creatorId);
+  console.log("loggedUserId", loggedUserId);
 
   return (
     <>

@@ -9,17 +9,11 @@ export const fetchEvent = async (id) => {
   try {
     connectToDb();
     console.log("event fetching");
-    const event = await Events.findById(id)
-      .populate({
-        path: "creator",
-        model: User,
-        select: "name email",
-      })
-      .populate({
-        path: "registeredUsers",
-        model: User,
-        select: "name email",
-      });
+    const event = await Events.findById(id).populate({
+      path: "registeredUsers",
+      model: User,
+      select: "name email",
+    });
     console.log("event fetxhed", event);
     if (!event) {
       throw new Error("Event not found");
@@ -42,9 +36,7 @@ export const fetchEvent = async (id) => {
         ? new Date(event.updatedAt).toISOString()
         : null,
       register_status: Boolean(event.register_status),
-      creator: event.creator
-        ? event.creator._id.toString()
-        : null,
+      creator: event.creator.toString(),
       registeredUsers: event.registeredUsers
         ? event.registeredUsers.map((user) =>
             user._id.toString()
@@ -65,17 +57,11 @@ export const fetchEvent = async (id) => {
 export const fetchEvents = async () => {
   try {
     connectToDb();
-    const events = await Events.find()
-      .populate({
-        path: "creator",
-        model: User,
-        select: "name email",
-      })
-      .populate({
-        path: "registeredUsers",
-        model: User,
-        select: "name email",
-      });
+    const events = await Events.find().populate({
+      path: "registeredUsers",
+      model: User,
+      select: "name email",
+    });
 
     // Serialize the events array
     const serializedEvents = events.map((event) => ({
@@ -94,13 +80,7 @@ export const fetchEvents = async () => {
         ? new Date(event.updatedAt).toISOString()
         : null,
       register_status: Boolean(event.register_status),
-      creator: event.creator
-        ? {
-            _id: event.creator._id.toString(),
-            name: event.creator.name,
-            email: event.creator.email,
-          }
-        : null,
+      creator: event.creator.toString(),
       registeredUsers: event.registeredUsers
         ? event.registeredUsers.map((user) => ({
             _id: user._id.toString(),

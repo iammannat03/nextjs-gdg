@@ -42,6 +42,14 @@ export default function EventsPage() {
           JSON.stringify(data || [])
         );
         setEvents(serializedEvents);
+        console.log(
+          "the logged user id is",
+          session?.user.id
+        );
+        console.log(
+          "the serialized events are",
+          serializedEvents
+        );
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -180,8 +188,8 @@ export default function EventsPage() {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between">
-                          {session?.user._id ===
-                          event.creator?._id ? (
+                          {session?.user.id ===
+                          event.creator ? (
                             <div className="flex gap-2 w-full">
                               <Button
                                 variant="outline"
@@ -215,20 +223,12 @@ export default function EventsPage() {
                               }}
                               className="w-full"
                               variant={
-                                event.registeredUsers?.some(
-                                  (user) =>
-                                    user._id ===
-                                    session?.user.id
-                                )
+                                event.register_status
                                   ? "destructive"
                                   : "default"
                               }
                             >
-                              {event.registeredUsers?.some(
-                                (user) =>
-                                  user._id ===
-                                  session?.user.id
-                              )
+                              {event.register_status
                                 ? "Unregister"
                                 : "Register"}
                             </Button>

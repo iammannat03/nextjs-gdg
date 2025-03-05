@@ -54,6 +54,10 @@ const EventForm = (props) => {
   const [image, setImage] = useState(props.event?.image);
 
   useEffect(() => {
+    console.log("the session is", session);
+  }, [session]);
+
+  useEffect(() => {
     form.setValue(fields.image.name, image);
   }, [image]);
 
@@ -123,96 +127,109 @@ const EventForm = (props) => {
   // };
 
   return (
-    <Form {...form}>
-      <form
-        autoComplete="off"
-        onSubmit={form.handleSubmit(onSubmit)}
-        method="post"
-      >
-        {/* Title field */}
-        <Field form={form} {...fields.title} />
+    <>
+      {session ? (
+        <Form {...form}>
+          <form
+            autoComplete="off"
+            onSubmit={form.handleSubmit(onSubmit)}
+            method="post"
+          >
+            {/* Title field */}
+            <Field form={form} {...fields.title} />
 
-        {/* Venue field */}
-        <Field form={form} {...fields.venue} />
+            {/* Venue field */}
+            <Field form={form} {...fields.venue} />
 
-        {/* Date fields */}
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-          <DatePicker form={form} {...fields.startDate} />
-          <DatePicker
-            form={form}
-            min={form.getValues(fields.startDate.name)}
-            {...fields.endDate}
-          />
+            {/* Date fields */}
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+              <DatePicker
+                form={form}
+                {...fields.startDate}
+              />
+              <DatePicker
+                form={form}
+                min={form.getValues(fields.startDate.name)}
+                {...fields.endDate}
+              />
+            </div>
+
+            {/* Time fields */}
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+              <Field form={form} {...fields.startTime} />
+              <Field form={form} {...fields.endTime} />
+            </div>
+
+            {/* Event Description */}
+            <h2 className="my-8 text-3xl text-center text-white">
+              Event Description
+            </h2>
+
+            {/* Image field */}
+            <Field form={form} {...fields.image}>
+              <Input
+                onChange={(event) => {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setImage(reader.result);
+                  };
+                  reader.readAsDataURL(
+                    event.target.files[0]
+                  );
+                }}
+                {...fields.image}
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+              />
+            </Field>
+
+            {/* Image preview */}
+            {image ? (
+              <img
+                src={image}
+                alt="Event Image"
+                className="w-full h-[250px] object-cover rounded-lg"
+                width={500}
+                height={500}
+              />
+            ) : (
+              <div className="w-full h-[250px] bg-teal-800 rounded-lg"></div>
+            )}
+
+            {/* Description field */}
+            <Field
+              type={props.event}
+              form={form}
+              {...fields.desc}
+              textarea
+            />
+
+            {/* Hidden input for event ID (if updating an existing event) */}
+            <input
+              type="hidden"
+              name="event_id"
+              value={props.event?.id ?? ""}
+            />
+
+            {/* Submit button */}
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                `${props.event ? "Update" : "Create"} Event`
+              )}
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        <div className="flex justify-center items-center h-screen">
+          <Loader className="animate-spin" />
         </div>
-
-        {/* Time fields */}
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-          <Field form={form} {...fields.startTime} />
-          <Field form={form} {...fields.endTime} />
-        </div>
-
-        {/* Event Description */}
-        <h2 className="my-8 text-3xl text-center text-white">
-          Event Description
-        </h2>
-
-        {/* Image field */}
-        <Field form={form} {...fields.image}>
-          <Input
-            onChange={(event) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                setImage(reader.result);
-              };
-              reader.readAsDataURL(event.target.files[0]);
-            }}
-            {...fields.image}
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-          />
-        </Field>
-
-        {/* Image preview */}
-        {image ? (
-          <img
-            src={image}
-            alt="Event Image"
-            className="w-full h-[250px] object-cover rounded-lg"
-            width={500}
-            height={500}
-          />
-        ) : (
-          <div className="w-full h-[250px] bg-teal-800 rounded-lg"></div>
-        )}
-
-        {/* Description field */}
-        <Field
-          type={props.event}
-          form={form}
-          {...fields.desc}
-          textarea
-        />
-
-        {/* Hidden input for event ID (if updating an existing event) */}
-        <input
-          type="hidden"
-          name="event_id"
-          value={props.event?.id ?? ""}
-        />
-
-        {/* Submit button */}
-        <Button
-          className="w-full"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader className="animate-spin" />
-          ) : (
-            `${props.event ? "Update" : "Create"} Event`
-          )}
-        </Button>
-      </form>
-    </Form>
+      )}
+    </>
   );
 };
 
