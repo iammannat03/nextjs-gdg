@@ -3,7 +3,7 @@ export { default } from "next-auth/middleware";
 import { getToken } from "next-auth/jwt";
 
 // protected routes
-const protectedRoutes = ["/events"];
+const protectedRoutes = ["/console"];
 
 // auth-related routes
 const authRoutes = ["/sign-in", "/sign-up"];
@@ -14,25 +14,13 @@ export async function middleware(request) {
 
   // If no token and trying to access protected routes, redirect to sign-in
   if (!token) {
-    if (
-      protectedRoutes.some((route) =>
-        url.pathname.startsWith(route)
-      )
-    ) {
-      return NextResponse.redirect(
-        new URL("/sign-in", request.url)
-      );
+    if (protectedRoutes.some((route) => url.pathname.startsWith(route))) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
   } else {
     // If the user is on an auth route and they are already authenticated, redirect to home
-    if (
-      authRoutes.some((route) =>
-        url.pathname.startsWith(route)
-      )
-    ) {
-      return NextResponse.redirect(
-        new URL("/", request.url)
-      ); // Redirect to home
+    if (authRoutes.some((route) => url.pathname.startsWith(route))) {
+      return NextResponse.redirect(new URL("/", request.url)); // Redirect to home
     }
   }
 

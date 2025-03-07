@@ -11,16 +11,19 @@ import {
 
 export function CarouselDemo() {
   return (
-    <Carousel className="w-full max-sm:hidden">
+    <Carousel
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+      className="w-full max-sm:hidden">
       <CarouselContent>
         {Array.from({ length: 5 }).map((_, index) => (
           <CarouselItem key={index}>
             <div className="p-1">
               <Card>
                 <CardContent className="flex items-center h-[30vh] justify-center p-6">
-                  <span className="text-4xl font-semibold">
-                    {index + 1}
-                  </span>
+                  <span className="text-4xl font-semibold">{index + 1}</span>
                 </CardContent>
               </Card>
             </div>

@@ -1,9 +1,9 @@
-import { connectToDb } from "@/db/dbConnect";
-import { Events } from "@/models/events";
+import { connect } from "@/db";
+import { Events } from "@/models/event.model";
 
 // GET: Fetch one event by ID
 export async function GET(req, res) {
-  await connectToDb();
+  await connect();
 
   const url = new URL(req.url);
   const event_id = url.searchParams.get("id"); // Extract event_id from the query params

@@ -1,13 +1,13 @@
 "use server";
 
-import { connectToDb } from "@/db/dbConnect";
-import { Events } from "@/models/events";
+import { connect } from "@/db";
+import { Events } from "@/models/event.model";
 import { User } from "@/models/user.model";
 import { revalidatePath } from "next/cache";
 
 export const fetchEvent = async (id) => {
   try {
-    connectToDb();
+    await connect();
     console.log("event fetching");
     const event = await Events.findById(id).populate({
       path: "registeredUsers",
@@ -26,9 +26,7 @@ export const fetchEvent = async (id) => {
       start_date: event.start_date
         ? new Date(event.start_date).toISOString()
         : null,
-      end_date: event.end_date
-        ? new Date(event.end_date).toISOString()
-        : null,
+      end_date: event.end_date ? new Date(event.end_date).toISOString() : null,
       createdAt: event.createdAt
         ? new Date(event.createdAt).toISOString()
         : null,
@@ -38,9 +36,7 @@ export const fetchEvent = async (id) => {
       register_status: Boolean(event.register_status),
       creator: event.creator.toString(),
       registeredUsers: event.registeredUsers
-        ? event.registeredUsers.map((user) =>
-            user._id.toString()
-          )
+        ? event.registeredUsers.map((user) => user._id.toString())
         : [],
     };
 
@@ -56,7 +52,7 @@ export const fetchEvent = async (id) => {
 
 export const fetchEvents = async () => {
   try {
-    connectToDb();
+    await connect();
     const events = await Events.find().populate({
       path: "registeredUsers",
       model: User,
@@ -70,9 +66,7 @@ export const fetchEvents = async () => {
       start_date: event.start_date
         ? new Date(event.start_date).toISOString()
         : null,
-      end_date: event.end_date
-        ? new Date(event.end_date).toISOString()
-        : null,
+      end_date: event.end_date ? new Date(event.end_date).toISOString() : null,
       createdAt: event.createdAt
         ? new Date(event.createdAt).toISOString()
         : null,
@@ -92,15 +86,13 @@ export const fetchEvents = async () => {
 
     return serializedEvents;
   } catch (err) {
-    throw new Error(
-      "Failed to fetch events from the database"
-    );
+    throw new Error("Failed to fetch events from the database");
   }
 };
 
 export const deleteEvent = async (id) => {
   try {
-    connectToDb();
+    await connect();
     await Events.findByIdAndDelete(id);
     revalidatePath("/events");
   } catch (err) {
@@ -110,7 +102,7 @@ export const deleteEvent = async (id) => {
 
 export const updateEvent = async (id, newData) => {
   try {
-    connectToDb();
+    await connect();
     const event = await Events.findById(id);
     Object.assign(event, newData);
     await event.save();
@@ -122,7 +114,7 @@ export const updateEvent = async (id, newData) => {
 
 export const addEvent = async (data, userId) => {
   try {
-    connectToDb();
+    await connect();
     const newEvent = new Events({
       ...data,
       creator: userId,
@@ -152,7 +144,7 @@ export const addEvent = async (data, userId) => {
 
 export const updateRegisterStatus = async (id, status) => {
   try {
-    connectToDb();
+    await connect();
     const event = await Events.findById(id);
     event.register_status = status;
     await event.save();
@@ -164,15 +156,13 @@ export const updateRegisterStatus = async (id, status) => {
 
 export const registerForEvent = async (eventId, userId) => {
   try {
-    connectToDb();
+    await connect();
     const event = await Events.findById(eventId);
 
     // Check if user is already registered
     if (event.registeredUsers.includes(userId)) {
       // todo: toast for this action instead of throwing error
-      throw new Error(
-        "User already registered for this event"
-      );
+      throw new Error("User already registered for this event");
     }
 
     // Add user to registered users
@@ -182,18 +172,13 @@ export const registerForEvent = async (eventId, userId) => {
 
     return event;
   } catch (err) {
-    throw new Error(
-      err.message || "Failed to register for event"
-    );
+    throw new Error(err.message || "Failed to register for event");
   }
 };
 
-export const unregisterFromEvent = async (
-  eventId,
-  userId
-) => {
+export const unregisterFromEvent = async (eventId, userId) => {
   try {
-    connectToDb();
+    await connect();
     const event = await Events.findById(eventId);
 
     // Remove user from registered users
@@ -211,7 +196,7 @@ export const unregisterFromEvent = async (
 
 export const isEventCreator = async (eventId, userId) => {
   try {
-    connectToDb();
+    await connect();
     const event = await Events.findById(eventId);
     return event.creator.toString() === userId.toString();
   } catch (err) {

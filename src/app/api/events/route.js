@@ -1,9 +1,9 @@
-import { connectToDb } from "@/db/dbConnect";
-import { Events } from "@/models/events";
+import { connect } from "@/db";
+import { Events } from "@/models/event.model";
 
 // GET: Fetch all events
 export async function GET(req, res) {
-  await connectToDb();
+  await connect();
 
   try {
     const events = await Events.find({});
@@ -22,7 +22,7 @@ export async function GET(req, res) {
 
 // POST: Create a new event
 export async function POST(req, res) {
-  await connectToDb();
+  await connect();
 
   try {
     const body = await req.json(); // Parse the request body
@@ -42,7 +42,7 @@ export async function POST(req, res) {
 
 // PUT: Update an existing event by ID
 export async function PUT(req, res) {
-  await connectToDb();
+  await connect();
   const url = new URL(req.url);
   const id = url.searchParams.get("id"); // Extract the ID from the query params
 
@@ -75,7 +75,7 @@ export async function PUT(req, res) {
 
 // DELETE: Delete an event by ID
 export async function DELETE(req, res) {
-  await connectToDb();
+  await connect();
 
   const url = new URL(req.url);
   const id = url.searchParams.get("id"); // /api/events?id=123SOMEID

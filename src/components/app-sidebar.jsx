@@ -17,20 +17,16 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent className="bg-black">
         <SidebarGroup>
-          <SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/75">
             NEXT.JS WORKSHOP
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  className=""
-                >
+                <SidebarMenuItem key={item.title} className="">
                   <SidebarMenuButton
                     asChild
-                    className="hover:bg-white/5 text-white/75 hover:text-white"
-                  >
+                    className="hover:bg-white/5 text-white/75 hover:text-white">
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

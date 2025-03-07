@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { User } from "./user.model";
 
 const EventSchema = new mongoose.Schema(
   {
@@ -55,6 +54,5 @@ const EventSchema = new mongoose.Schema(
 );
 
 export const Events =
-  mongoose.models.Events ||
-  mongoose.model("Events", EventSchema);
+  mongoose.models.Events || mongoose.model("Events", EventSchema);
 // check if user model is already created or not
